@@ -7,7 +7,7 @@ class Category(models.Model):
     image = models.ImageField(upload_to='images/categories')
 
     def __str__(self):
-        return f'Категория {self.name}'
+        return f'{self.name}'
 
     class Meta:
         verbose_name = 'категория'
@@ -21,7 +21,7 @@ class Subcategory(models.Model):
     parent_category = models.ForeignKey(Category, on_delete=models.CASCADE, verbose_name='родительская категория')
 
     def __str__(self):
-        return f'Подкатегория {self.name}'
+        return f'{self.name}'
 
     class Meta:
         verbose_name = 'подкатегория'
