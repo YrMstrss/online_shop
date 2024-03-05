@@ -23,6 +23,7 @@ class AddToCartAPIView(generics.GenericAPIView):
 
         prod = ProductInCart.objects.get_or_create(product=product, cart=cart)
         prod[0].count += 1
+        prod[0].summ += product.price
         prod[0].save()
 
         return redirect('shopping_carts:cart_view')
