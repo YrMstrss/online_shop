@@ -11,6 +11,6 @@ class ShoppingCart(models.Model):
 
 class ProductInCart(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, verbose_name='товар')
-    count = models.IntegerField(default=1, verbose_name='количество в корзине')
+    count = models.IntegerField(default=0, verbose_name='количество в корзине')
     cart = models.ForeignKey(ShoppingCart, on_delete=models.CASCADE, verbose_name='корзина')
     summ = models.IntegerField(default=0, verbose_name='цена товаров')
