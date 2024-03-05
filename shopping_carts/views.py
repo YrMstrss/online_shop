@@ -5,7 +5,7 @@ from rest_framework.response import Response
 
 from products.models import Product
 from shopping_carts.models import ShoppingCart, ProductInCart
-from shopping_carts.serializers import ShoppingCartSerializer, ProductInCartSerializer
+from shopping_carts.serializers import ShoppingCartSerializer, ProductInCartSerializer, ProductInCartUpdateSerializer
 
 
 class CartRetrieveAPIView(generics.RetrieveAPIView):
@@ -92,3 +92,36 @@ class ProductInCartDestroyAPIVIew(generics.DestroyAPIView):
         cart.save()
         self.perform_destroy(instance)
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class ProductInCartUpdateAPIView(generics.UpdateAPIView):
+    serializer_class = ProductInCartUpdateSerializer
+
+    def get_queryset(self):
+        cart = ShoppingCart.objects.get(user=self.request.user)
+        return ProductInCart.objects.filter(cart=cart)
+
+    def get_object(self, *args, **kwargs):
+        product = Product.objects.get(pk=kwargs.get('product_pk'))
+        cart = ShoppingCart.objects.get(user=self.request.user)
+        return ProductInCart.objects.get(product=product, cart=cart)
+
+    def update(self, request, *args, **kwargs):
+        cart = ShoppingCart.objects.get(user=self.request.user)
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object(self, *args, **kwargs)
+        cart.total_sum -= instance.summ
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+
+        if getattr(instance, '_prefetched_objects_cache', None):
+            instance._prefetched_objects_cache = {}
+
+        instance.summ = instance.product.price * instance.count
+        instance.save()
+        cart.total_sum += instance.summ
+        cart.save()
+
+        return Response(serializer.data)
+
