@@ -1,11 +1,10 @@
-from django.db.migrations import serializer
 from django.shortcuts import redirect
 from rest_framework import generics, status
 from rest_framework.response import Response
 
 from products.models import Product
 from shopping_carts.models import ShoppingCart, ProductInCart
-from shopping_carts.serializers import ShoppingCartSerializer, ProductInCartSerializer, ProductInCartUpdateSerializer
+from shopping_carts.serializers import ShoppingCartSerializer, ProductInCartUpdateSerializer
 
 
 class CartRetrieveAPIView(generics.RetrieveAPIView):
