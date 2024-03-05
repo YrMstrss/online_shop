@@ -46,3 +46,15 @@ class RemoveFromCartAPIView(generics.GenericAPIView):
             return redirect('shopping_carts:cart_view')
 
         return redirect('shopping_carts:cart_view')
+
+
+class CleanCartAPIView(generics.GenericAPIView):
+
+    def get(self, request, *args, **kwargs):
+        cart = ShoppingCart.objects.get(user=self.request.user)
+        all_products = cart.productincart_set.all()
+        for product in all_products:
+            product.delete()
+        cart.total_sum = 0
+
+        return redirect('shopping_carts:cart_view')
