@@ -15,7 +15,6 @@ class CartRetrieveAPIView(generics.RetrieveAPIView):
 
 
 class AddToCartAPIView(generics.GenericAPIView):
-    serializer_class = ProductInCartSerializer
 
     def get(self, request, *args, **kwargs):
         product = Product.objects.get(pk=kwargs.get('product_pk'))
@@ -25,5 +24,25 @@ class AddToCartAPIView(generics.GenericAPIView):
         prod[0].count += 1
         prod[0].summ += product.price
         prod[0].save()
+
+        return redirect('shopping_carts:cart_view')
+
+
+class RemoveFromCartAPIView(generics.GenericAPIView):
+
+    def get(self, request, *args, **kwargs):
+        product = Product.objects.get(pk=kwargs.get('product_pk'))
+        cart = ShoppingCart.objects.get(user=self.request.user)
+
+        try:
+            prod = ProductInCart.objects.get(product=product, cart=cart)
+            prod.count -= 1
+            if prod.count == 0:
+                prod.delete()
+            else:
+                prod.summ -= product.price
+                prod.save()
+        except ProductInCart.DoesNotExist:
+            return redirect('shopping_carts:cart_view')
 
         return redirect('shopping_carts:cart_view')
