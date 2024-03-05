@@ -1,3 +1,12 @@
-from django.shortcuts import render
+from rest_framework import generics
 
-# Create your views here.
+from shopping_carts.models import ShoppingCart, ProductInCart
+from shopping_carts.serializers import ShoppingCartSerializer
+
+
+class CartRetrieveAPIView(generics.RetrieveAPIView):
+    serializer_class = ShoppingCartSerializer
+    queryset = ShoppingCart.objects.all()
+
+    def get_object(self):
+        return ShoppingCart.objects.get(user=self.request.user)
