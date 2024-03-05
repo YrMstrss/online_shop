@@ -18,7 +18,7 @@ class CartRetrieveAPIView(generics.RetrieveAPIView):
 class AddToCartAPIView(generics.GenericAPIView):
 
     def get(self, request, *args, **kwargs):
-        product = Product.objects.get(pk=kwargs.get('product_pk'))
+        product = Product.objects.get(slug=kwargs.get('slug'))
         cart = ShoppingCart.objects.get(user=self.request.user)
 
         prod = ProductInCart.objects.get_or_create(product=product, cart=cart)
@@ -38,7 +38,7 @@ class AddToCartAPIView(generics.GenericAPIView):
 class RemoveFromCartAPIView(generics.GenericAPIView):
 
     def get(self, request, *args, **kwargs):
-        product = Product.objects.get(pk=kwargs.get('product_pk'))
+        product = Product.objects.get(slug=kwargs.get('slug'))
         cart = ShoppingCart.objects.get(user=self.request.user)
 
         try:
@@ -80,7 +80,7 @@ class ProductInCartDestroyAPIVIew(generics.DestroyAPIView):
         return ProductInCart.objects.filter(cart=cart)
 
     def get_object(self, *args, **kwargs):
-        product = Product.objects.get(pk=kwargs.get('product_pk'))
+        product = Product.objects.get(slug=kwargs.get('slug'))
         cart = ShoppingCart.objects.get(user=self.request.user)
         return ProductInCart.objects.get(product=product, cart=cart)
 
@@ -101,7 +101,7 @@ class ProductInCartUpdateAPIView(generics.UpdateAPIView):
         return ProductInCart.objects.filter(cart=cart)
 
     def get_object(self, *args, **kwargs):
-        product = Product.objects.get(pk=kwargs.get('product_pk'))
+        product = Product.objects.get(slug=kwargs.get('slug'))
         cart = ShoppingCart.objects.get(user=self.request.user)
         return ProductInCart.objects.get(product=product, cart=cart)
 
