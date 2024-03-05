@@ -21,9 +21,15 @@ class AddToCartAPIView(generics.GenericAPIView):
         cart = ShoppingCart.objects.get(user=self.request.user)
 
         prod = ProductInCart.objects.get_or_create(product=product, cart=cart)
+
+        cart.total_sum = cart.total_sum - product.price * prod[0].count
+        cart.save()
+
         prod[0].count += 1
         prod[0].summ += product.price
+        cart.total_sum += prod[0].summ
         prod[0].save()
+        cart.save()
 
         return redirect('shopping_carts:cart_view')
 
@@ -36,12 +42,18 @@ class RemoveFromCartAPIView(generics.GenericAPIView):
 
         try:
             prod = ProductInCart.objects.get(product=product, cart=cart)
+
+            cart.total_sum = cart.total_sum - product.price * prod.count
+            cart.save()
+
             prod.count -= 1
             if prod.count == 0:
                 prod.delete()
             else:
                 prod.summ -= product.price
+                cart.total_sum += prod.summ
                 prod.save()
+                cart.save()
         except ProductInCart.DoesNotExist:
             return redirect('shopping_carts:cart_view')
 
