@@ -1,5 +1,7 @@
+from django.db.migrations import serializer
 from django.shortcuts import redirect
-from rest_framework import generics
+from rest_framework import generics, status
+from rest_framework.response import Response
 
 from products.models import Product
 from shopping_carts.models import ShoppingCart, ProductInCart
@@ -68,5 +70,25 @@ class CleanCartAPIView(generics.GenericAPIView):
         for product in all_products:
             product.delete()
         cart.total_sum = 0
+        cart.save()
 
         return redirect('shopping_carts:cart_view')
+
+
+class ProductInCartDestroyAPIVIew(generics.DestroyAPIView):
+    def get_queryset(self):
+        cart = ShoppingCart.objects.get(user=self.request.user)
+        return ProductInCart.objects.filter(cart=cart)
+
+    def get_object(self, *args, **kwargs):
+        product = Product.objects.get(pk=kwargs.get('product_pk'))
+        cart = ShoppingCart.objects.get(user=self.request.user)
+        return ProductInCart.objects.get(product=product, cart=cart)
+
+    def destroy(self, request, *args, **kwargs):
+        cart = ShoppingCart.objects.get(user=self.request.user)
+        instance = self.get_object(self, *args, **kwargs)
+        cart.total_sum -= instance.product.price * instance.count
+        cart.save()
+        self.perform_destroy(instance)
+        return Response(status=status.HTTP_204_NO_CONTENT)
