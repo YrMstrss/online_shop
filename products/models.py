@@ -6,7 +6,7 @@ from categories.models import Subcategory
 class Product(models.Model):
     name = models.CharField(max_length=100, verbose_name='название')
     price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='цена')
-    slug = models.CharField(max_length=100, verbose_name='slug')
+    slug = models.SlugField(max_length=100, verbose_name='slug')
     image = models.ImageField(upload_to=f'images/products/')
     subcategory = models.ForeignKey(Subcategory, on_delete=models.CASCADE, verbose_name='подкатегория')
 

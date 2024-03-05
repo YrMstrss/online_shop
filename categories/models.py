@@ -3,7 +3,7 @@ from django.db import models
 
 class Category(models.Model):
     name = models.CharField(max_length=50, verbose_name='название')
-    slug = models.CharField(max_length=75, verbose_name='slug')
+    slug = models.SlugField(max_length=75, verbose_name='slug')
     image = models.ImageField(upload_to='images/categories')
 
     def __str__(self):
@@ -16,7 +16,7 @@ class Category(models.Model):
 
 class Subcategory(models.Model):
     name = models.CharField(max_length=100, verbose_name='название')
-    slug = models.CharField(max_length=75, verbose_name='slug')
+    slug = models.SlugField(max_length=75, verbose_name='slug')
     image = models.ImageField(upload_to='images/categories')
     parent_category = models.ForeignKey(Category, on_delete=models.CASCADE, verbose_name='родительская категория')
 

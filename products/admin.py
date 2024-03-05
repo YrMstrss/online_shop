@@ -13,3 +13,4 @@ def category(obj):
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
     list_display = ('pk', 'name', 'price', 'subcategory', category)
+    prepopulated_fields = {'slug': ('name',)}
