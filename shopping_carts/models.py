@@ -5,6 +5,9 @@ from users.models import User
 
 
 class ShoppingCart(models.Model):
+    """
+    Модель корзины пользователя
+    """
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='пользователь')
     total_sum = models.DecimalField(max_digits=11, decimal_places=2, default=0, verbose_name='цена всех товаров')
 
@@ -17,6 +20,9 @@ class ShoppingCart(models.Model):
 
 
 class ProductInCart(models.Model):
+    """
+    Модель товара в корзине
+    """
     product = models.ForeignKey(Product, on_delete=models.CASCADE, verbose_name='товар')
     count = models.IntegerField(default=0, verbose_name='количество в корзине')
     cart = models.ForeignKey(ShoppingCart, on_delete=models.CASCADE, verbose_name='корзина')

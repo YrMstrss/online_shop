@@ -5,7 +5,9 @@ from shopping_carts.models import ShoppingCart, ProductInCart
 
 
 class ProductInCartSerializer(serializers.ModelSerializer):
-
+    """
+    Сериалайзер товара в корзине
+    """
     product = ProductSerializer()
 
     class Meta:
@@ -14,7 +16,9 @@ class ProductInCartSerializer(serializers.ModelSerializer):
 
 
 class ShoppingCartSerializer(serializers.ModelSerializer):
-
+    """
+    Сериалайзер корзины
+    """
     products = ProductInCartSerializer(source='productincart_set', many=True)
 
     class Meta:
@@ -23,7 +27,9 @@ class ShoppingCartSerializer(serializers.ModelSerializer):
 
 
 class ProductInCartUpdateSerializer(serializers.ModelSerializer):
-
+    """
+    Сериалайзер для обновления количества товара в корзине
+    """
     class Meta:
         model = ProductInCart
         fields = ('count', )

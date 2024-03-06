@@ -8,16 +8,34 @@ from shopping_carts.serializers import ShoppingCartSerializer, ProductInCartUpda
 
 
 class CartRetrieveAPIView(generics.RetrieveAPIView):
+    """
+    Контроллер для вывода корзины пользователя
+    """
     serializer_class = ShoppingCartSerializer
     queryset = ShoppingCart.objects.all()
 
     def get_object(self):
+        """
+        Получение корзины текущего пользователя
+        :return: ShoppingCart: Корзина текущего пользователя
+        """
         return ShoppingCart.objects.get(user=self.request.user)
 
 
 class AddToCartAPIView(generics.GenericAPIView):
-
+    """
+    Контроллер для добавления 1 единицы товара в корзину
+    """
     def get(self, request, *args, **kwargs):
+        """
+        Получает товар по слагу из url. В случае отсутствия данного товара в корзине создает объект ProductInCart,
+        если такой товар в корзине уже есть, то добавляет 1 единицу к счетчику данного товара в корзине. А так же
+        изменяет стоимость всех товаров и стоимость данного товара в корзине
+        :param request:
+        :param args: Позиционные аргументы
+        :param kwargs: Именованные аргументы
+        :return: Редирект на корзину
+        """
         product = Product.objects.get(slug=kwargs.get('slug'))
         cart = ShoppingCart.objects.get(user=self.request.user)
 
@@ -36,8 +54,19 @@ class AddToCartAPIView(generics.GenericAPIView):
 
 
 class RemoveFromCartAPIView(generics.GenericAPIView):
-
+    """
+    Контроллер для удаления 1 единицы товара из корзины
+    """
     def get(self, request, *args, **kwargs):
+        """
+        Получает товар по слагу из url. Уменьшает количество товара в корзине на 1, если количество товаров становится
+        равным нулю, удаляет товар из корзины. А так же изменяет стоимость всех товаров и стоимость данного товара в
+        корзине
+        :param request:
+        :param args: Позиционные аргументы
+        :param kwargs: Именованные аргументы
+        :return: Редирект на корзину
+        """
         product = Product.objects.get(slug=kwargs.get('slug'))
         cart = ShoppingCart.objects.get(user=self.request.user)
 
@@ -62,8 +91,17 @@ class RemoveFromCartAPIView(generics.GenericAPIView):
 
 
 class CleanCartAPIView(generics.GenericAPIView):
-
+    """
+    Контроллер для удаления всех товаров из корзины
+    """
     def get(self, request, *args, **kwargs):
+        """
+        Удаляет все товары из корзины и устанавливает всю стоимость на 0
+        :param request:
+        :param args: Позиционные аргументы
+        :param kwargs: Именованные аргументы
+        :return: Редирект на корзину
+        """
         cart = ShoppingCart.objects.get(user=self.request.user)
         all_products = cart.productincart_set.all()
         for product in all_products:
@@ -75,6 +113,9 @@ class CleanCartAPIView(generics.GenericAPIView):
 
 
 class ProductInCartDestroyAPIVIew(generics.DestroyAPIView):
+    """
+    Контроллер для удаления товара из корзины вне зависимости от количества
+    """
     def get_queryset(self):
         cart = ShoppingCart.objects.get(user=self.request.user)
         return ProductInCart.objects.filter(cart=cart)
@@ -94,6 +135,9 @@ class ProductInCartDestroyAPIVIew(generics.DestroyAPIView):
 
 
 class ProductInCartUpdateAPIView(generics.UpdateAPIView):
+    """
+    Контроллер для обновления количества товара в корзине
+    """
     serializer_class = ProductInCartUpdateSerializer
 
     def get_queryset(self):

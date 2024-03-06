@@ -2,6 +2,9 @@ from django.db import models
 
 
 class Category(models.Model):
+    """
+    Модель категории товара
+    """
     name = models.CharField(max_length=50, verbose_name='название')
     slug = models.SlugField(max_length=75, verbose_name='slug')
     image = models.ImageField(upload_to='images/categories')
@@ -15,6 +18,9 @@ class Category(models.Model):
 
 
 class Subcategory(models.Model):
+    """
+    Модель подкатегории товара
+    """
     name = models.CharField(max_length=100, verbose_name='название')
     slug = models.SlugField(max_length=75, verbose_name='slug')
     image = models.ImageField(upload_to='images/categories')

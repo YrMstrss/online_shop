@@ -4,6 +4,9 @@ from categories.models import Subcategory
 
 
 class Product(models.Model):
+    """
+    Модель продукта
+    """
     name = models.CharField(max_length=100, verbose_name='название')
     price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='цена')
     slug = models.SlugField(max_length=100, verbose_name='slug')
