@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from products.models import Product
 from shopping_carts.models import ShoppingCart, ProductInCart
 from shopping_carts.serializers import ShoppingCartSerializer, ProductInCartUpdateSerializer
+from shopping_carts.services import get_total_sum
 
 
 class CartRetrieveAPIView(generics.RetrieveAPIView):
@@ -40,15 +41,10 @@ class AddToCartAPIView(generics.GenericAPIView):
         cart = ShoppingCart.objects.get(user=self.request.user)
 
         prod = ProductInCart.objects.get_or_create(product=product, cart=cart)
-
-        cart.total_sum = cart.total_sum - product.price * prod[0].count
-        cart.save()
-
         prod[0].count += 1
         prod[0].summ += product.price
-        cart.total_sum += prod[0].summ
         prod[0].save()
-        cart.save()
+        get_total_sum(cart)
 
         return redirect('shopping_carts:cart_view')
 
@@ -73,17 +69,13 @@ class RemoveFromCartAPIView(generics.GenericAPIView):
         try:
             prod = ProductInCart.objects.get(product=product, cart=cart)
 
-            cart.total_sum = cart.total_sum - product.price * prod.count
-            cart.save()
-
             prod.count -= 1
             if prod.count == 0:
                 prod.delete()
             else:
                 prod.summ -= product.price
-                cart.total_sum += prod.summ
                 prod.save()
-                cart.save()
+            get_total_sum(cart)
         except ProductInCart.DoesNotExist:
             return redirect('shopping_carts:cart_view')
 
@@ -103,9 +95,7 @@ class CleanCartAPIView(generics.GenericAPIView):
         :return: Редирект на корзину
         """
         cart = ShoppingCart.objects.get(user=self.request.user)
-        all_products = cart.productincart_set.all()
-        for product in all_products:
-            product.delete()
+        cart.productincart_set.all().delete()
         cart.total_sum = 0
         cart.save()
 
@@ -116,21 +106,14 @@ class ProductInCartDestroyAPIVIew(generics.DestroyAPIView):
     """
     Контроллер для удаления товара из корзины вне зависимости от количества
     """
-    def get_queryset(self):
-        cart = ShoppingCart.objects.get(user=self.request.user)
-        return ProductInCart.objects.filter(cart=cart)
-
-    def get_object(self, *args, **kwargs):
-        product = Product.objects.get(slug=kwargs.get('slug'))
-        cart = ShoppingCart.objects.get(user=self.request.user)
-        return ProductInCart.objects.get(product=product, cart=cart)
 
     def destroy(self, request, *args, **kwargs):
         cart = ShoppingCart.objects.get(user=self.request.user)
-        instance = self.get_object(self, *args, **kwargs)
-        cart.total_sum -= instance.product.price * instance.count
-        cart.save()
+        product = Product.objects.get(slug=kwargs.get('slug'))
+
+        instance = ProductInCart.objects.get(product=product, cart=cart)
         self.perform_destroy(instance)
+        get_total_sum(cart)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
@@ -140,20 +123,12 @@ class ProductInCartUpdateAPIView(generics.UpdateAPIView):
     """
     serializer_class = ProductInCartUpdateSerializer
 
-    def get_queryset(self):
-        cart = ShoppingCart.objects.get(user=self.request.user)
-        return ProductInCart.objects.filter(cart=cart)
-
-    def get_object(self, *args, **kwargs):
-        product = Product.objects.get(slug=kwargs.get('slug'))
-        cart = ShoppingCart.objects.get(user=self.request.user)
-        return ProductInCart.objects.get(product=product, cart=cart)
-
     def update(self, request, *args, **kwargs):
         cart = ShoppingCart.objects.get(user=self.request.user)
+        product = Product.objects.get(slug=kwargs.get('slug'))
+
         partial = kwargs.pop('partial', False)
-        instance = self.get_object(self, *args, **kwargs)
-        cart.total_sum -= instance.summ
+        instance = ProductInCart.objects.get(product=product, cart=cart)
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
@@ -163,8 +138,7 @@ class ProductInCartUpdateAPIView(generics.UpdateAPIView):
 
         instance.summ = instance.product.price * instance.count
         instance.save()
-        cart.total_sum += instance.summ
-        cart.save()
+        get_total_sum(cart)
 
         return Response(serializer.data)
 
